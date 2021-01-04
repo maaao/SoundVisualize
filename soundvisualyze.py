@@ -32,7 +32,6 @@ def showSpectrogram(rate, data):
     # フレームシフト長 
     hop_length = int(fft_size / 4)  
     
-    
     # 短時間フーリエ変換実行
     amplitude = np.abs(librosa.core.stft(data, n_fft=fft_size, hop_length=hop_length))
     
@@ -55,6 +54,7 @@ def main():
     data = data / 32768
     showRowData(rate, data)
     showFFT(rate, data)
+    showSpectrogram(rate, data)
 
 if __name__=='__main__':
     main()
