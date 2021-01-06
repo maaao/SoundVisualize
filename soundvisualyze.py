@@ -51,6 +51,7 @@ def main():
     args = sys.argv
     wav_filename = args[1]
     rate, data = scipy.io.wavfile.read(wav_filename)
+    print(data)
     data = data / 32768
     showRowData(rate, data)
     showFFT(rate, data)

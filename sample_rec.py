@@ -2,9 +2,12 @@ import sounddevice as sd
 import wave
 import numpy as np
 import pyaudio
+import struct
+import matplotlib.pyplot as plt
 
 def sounddev():
-    sd.default.device = 10
+    sd.default.device = 11
+    rate = 32000
     rate = 44100
     channel = 1
     t = 3
@@ -27,31 +30,45 @@ def sounddev():
         wb.writeframes(data.tobytes())  # バイト列に変換
 
 def pyaud():
-    RECORD_SECONDS = 10 #録音する時間の長さ（秒）
+    RECORD_SECONDS = 2 #録音する時間の長さ（秒）
     WAVE_OUTPUT_FILENAME = "sample.wav" #音声を保存するファイル名
-    iDeviceIndex = 10 #録音デバイスのインデックス番号
+    iDeviceIndex = 11 #録音デバイスのインデックス番号
     
     #基本情報の設定
     FORMAT = pyaudio.paInt16 #音声のフォーマット
     CHANNELS = 1             #モノラル
     RATE = 32000             #サンプルレート
-    CHUNK = 2**11            #データ点数
+    # RATE = 44100             #サンプルレート
+    CHUNK = 1024           #データ点数
     audio = pyaudio.PyAudio() #pyaudio.PyAudio()
     
     stream = audio.open(format=FORMAT, channels=CHANNELS,
             rate=RATE, input=True,
             input_device_index = iDeviceIndex, #録音デバイスのインデックス番号
             frames_per_buffer=CHUNK)
+    # stream = audio.open(format=FORMAT, channels=CHANNELS,
+    #         rate=RATE, input=True,
+    #         input_device_index = iDeviceIndex #録音デバイスのインデックス番号
+    #         )
     
     #--------------録音開始---------------
     
     print ("recording...")
-    frames = []
-    for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-        data = stream.read(CHUNK)
-        frames.append(data)
+    numOfFrames = RATE*10
+    frames = [0]*numOfFrames
+    i=0
+    # for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+    while(True):
+        data = stream.read(2)
+        # frames.append(data)
+        print(data)
+        print(type(data))
+        frames[i]=struct.unpack("<h", data)
+        plt.plot(range(numOfFrames), frames)
+        plt.pause(0.01)
+        i+=1    
     
-    
+    exit(1)
     print ("finished recording")
     
     #--------------録音終了---------------
@@ -69,6 +86,7 @@ def pyaud():
 
 def main():
     pyaud()
+    # sounddev()
 
 if __name__ == "__main__":
     main()
