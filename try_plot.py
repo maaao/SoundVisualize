@@ -28,7 +28,7 @@ def plot_animation_sample():
     line, = ax.plot(x, np.sin(x))
 
     def animate(i):
-        plt.pause(2)
+        print(i)
         line.set_ydata(np.sin(x + i/10.0))  # update the data
         return line,
 
@@ -58,11 +58,63 @@ def plot_animation():
 
     plt.show()
 
+def plot_rand():
+    fig = plt.figure()
+    ims = []
+    
+    for i in range(3):
+        rand = np.random.randn(100) # 100個の乱数を作成
+        
+        img = plt.plot(rand) # グラフを作成
+        plt.title("sample animation")
+        plt.ylim(-10,10)
+    
+        ims.append(img) # グラフを配列に追加
+        print(i)
+    
+    # 100枚のプロットを 100ms ごとに表示するアニメーション
+    ani = animation.ArtistAnimation(fig, ims, interval=1000)
+    plt.show()
+
+def plot_wav():
+    frame = 44100
+    disp_range = 44100
+    step = 1000
+    interval = int(step/frame*1000)
+    fig, ax = plt.subplots()
+    ax.set_ylim(-33000, 33000)
+
+    with open("voice_10s_left.bin", mode="rb") as f:
+        data = np.fromfile(f, np.int16)
+        length = len(data)
+        print(length)
+        print(int((length-disp_range)/step)*step-1)
+        print(range(length-disp_range))
+        i=0
+        print(data[i:disp_range+i])
+
+        x = np.arange(i*step/frame, (i*step+disp_range)/frame, disp_range/10/frame)
+        ax.plot(x, data[i*step:disp_range+i*step])
+
+        def hoge(i):
+            ax.cla() # ax をクリア
+            ax.set_ylim(-33000, 33000)
+            x = np.arange(i*step/frame, (i*step+disp_range)/frame, disp_range/10/frame)
+            print(x)
+            ax.plot(x, data[i*step:disp_range+i*step])
+            # ax.plot(np.arange(i*step, disp_range+i*step), data[i*step:disp_range+i*step])
+            # print(i)
+
+        ani = animation.FuncAnimation(fig, hoge, frames=np.arange(0,int((length-disp_range)/step)-1, 1), interval=interval)
+        plt.show()
+        
 
 def main():
     # plot_sin_wave()
     # plot_animation()
-    plot_animation_sample()
+    # plot_animation_sample()
+    # plot_rand()
+    plot_wav()
 
 if __name__ == "__main__":
     main()
