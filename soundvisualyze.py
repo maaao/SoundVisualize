@@ -13,6 +13,8 @@ def showRowData(rate, data):
     time = np.arange(0, data.shape[0]/rate, 1/rate)  
     #データプロット
     plt.plot(time, data)
+    print(len(time))
+    print(len(data))
     plt.show()
 
 def showFFT(rate, data):
