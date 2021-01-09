@@ -23,13 +23,12 @@ def plot_sin_wave():
 
 def plot_animation_sample():
     fig, ax = plt.subplots()
-
-    x = np.arange(0, 2*np.pi, 0.01)
+    ax.set_ylim(-5, 5)
+    x = np.arange(0, 4*np.pi, 4*np.pi/44100)
     line, = ax.plot(x, np.sin(x))
 
     def animate(i):
-        print(i)
-        line.set_ydata(np.sin(x + i/10.0))  # update the data
+        line.set_ydata(np.sin(x + i/10.0) + np.sin(x + i/9.0) + np.sin(x + i/7.0) )  # update the data
         return line,
 
     # Init only required for blitting to give a clean slate.
@@ -37,8 +36,7 @@ def plot_animation_sample():
         line.set_ydata(np.ma.array(x, mask=True))
         return line,
 
-    ani = animation.FuncAnimation(fig, animate, np.arange(1, 200), init_func=init,
-                                interval=25, blit=True)
+    ani = animation.FuncAnimation(fig, animate, np.arange(1, 200), init_func=init, interval=25, blit=True)
     plt.show()
 
 def plot_animation():
@@ -79,7 +77,7 @@ def plot_rand():
 def plot_wav():
     frame = 44100
     disp_range = 44100
-    step = 1000
+    step = int(44100/4)
     interval = int(step/frame*1000)
     fig, ax = plt.subplots()
     ax.set_ylim(-33000, 33000)
@@ -94,14 +92,17 @@ def plot_wav():
         print(data[i:disp_range+i])
 
         x = np.arange(i*step/frame, (i*step+disp_range)/frame, disp_range/10/frame)
-        ax.plot(x, data[i*step:disp_range+i*step])
+        ax.plot(np.arange(i*step, disp_range+i*step), data[i*step:disp_range+i*step])
 
         def hoge(i):
             ax.cla() # ax をクリア
             ax.set_ylim(-33000, 33000)
-            x = np.arange(i*step/frame, (i*step+disp_range)/frame, disp_range/10/frame)
-            print(x)
-            ax.plot(x, data[i*step:disp_range+i*step])
+            x = np.arange(i*step, disp_range+i*step)/frame
+            y = data[i*step:disp_range+i*step]
+            x_label = np.arange(i*step/frame, (i*step+disp_range)/frame, disp_range/10/frame)
+            x_label = [10, 20, 30]
+            # plt.xticks(x, x_label)
+            ax.plot(x, y)
             # ax.plot(np.arange(i*step, disp_range+i*step), data[i*step:disp_range+i*step])
             # print(i)
 
@@ -112,9 +113,9 @@ def plot_wav():
 def main():
     # plot_sin_wave()
     # plot_animation()
-    # plot_animation_sample()
+    plot_animation_sample()
     # plot_rand()
-    plot_wav()
+    # plot_wav()
 
 if __name__ == "__main__":
     main()
