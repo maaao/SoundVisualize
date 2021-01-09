@@ -7,15 +7,6 @@ import numpy as np
 class wavedit():
     def __init__(self, filename):
         self.wf = wave.open(filename)
-    
-    def showParams(self):
-        print("channels : "+str(self.wf.getnchannels()))
-        print("width : " + str(self.wf.getsampwidth()))
-        print("framerate : " + str(self.wf.getframerate()))
-        print("nframes : " + str(self.wf.getnframes()))
-        print("compname : " + str(self.wf.getcompname()))
-
-    def convToMono(self):
         data = self.wf.readframes(self.wf.getnframes())
         num_data = np.fromstring(data, dtype="int16")
 
@@ -25,47 +16,62 @@ class wavedit():
         else:
             self.left = num_data
             self.right = [0]*len(num_data)
+    
+    def showParams(self):
+        print("channels : "+str(self.wf.getnchannels()))
+        print("width : " + str(self.wf.getsampwidth()))
+        print("framerate : " + str(self.wf.getframerate()))
+        print("nframes : " + str(self.wf.getnframes()))
+        print("compname : " + str(self.wf.getcompname()))
 
-    def plotWave(self):
-        # left channel
-        plt.subplot(2, 1, 1)
-        plt.plot(self.left,label="left")
-        plt.legend()
+    def getnchannels(self):
+        return self.wf.getnchannels()
+    
+    def getsampwidth(self):
+        return self.wf.getsampwidth()
+    
+    def getframerate(self):
+        return self.wf.getframerate()
+    
+    def getnframes(self):
+        return self.wf.getnframes()
 
-        # right channel
-        plt.subplot(2, 1, 2)
-        plt.plot(self.right,label="right")
-        plt.legend()
-        plt.show()
-
-    def saveMonoWav(self):
+    def saveMonoWav(self, filename_left="left.wav", filename_right="right.wav"):
         channels = self.wf.getnchannels()
         width = self.wf.getsampwidth()
         framerate = self.wf.getframerate()
         nframes = self.wf.getnframes()
         compname = self.wf.getcompname()
 
-        wf = wave.open("left.wav", "wb")
-        
+        wf = wave.open(filename_left, "wb")
+
         wf.setparams([1, width, framerate, nframes, "NONE", compname])
         wf.writeframes(self.left.tobytes())
         wf.close()
 
         if(channels == 2):
-            wf = wave.open("right.wav", "wb")
+            wf = wave.open(filename_right, "wb")
             wf.setparams([1, width, framerate, nframes, "NONE", compname])
             wf.writeframesraw(self.right.tobytes())
             wf.close()
-
+    
+    def getBinData(self):
+        return self.left.tobytes(), self.right.tobytes()
 
 def main():
-    filename = "wav/voice_10s.wav"
-    filename = "hoge.wav"
+    filename = "voice_10s.wav"
+
     we = wavedit(filename)
     we.showParams()
-    we.convToMono()
-    we.plotWave()  
     we.saveMonoWav()
+    bin_l, bin_r = we.getBinData()
+    
+    fig, ax = plt.subplots()
+    ax.set_ylim(-33000, 33000)
+    data_l = np.fromstring(bin_l, dtype="int16")
+    print(data_l)
+    ax.plot(range(len(data_l)), data_l)
+    plt.show()
 
 if __name__ == '__main__':
     main()
