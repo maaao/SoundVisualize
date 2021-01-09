@@ -1,9 +1,12 @@
 import sounddevice as sd
 import wave
+import time
 import numpy as np
 import pyaudio
 import struct
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import matplotlib.style as mplstyle
 
 def sounddev():
     sd.default.device = 11
@@ -29,6 +32,8 @@ def sounddev():
         wb.setframerate(rate)
         wb.writeframes(data.tobytes())  # バイト列に変換
 
+x = 0
+
 def pyaud():
     RECORD_SECONDS = 2 #録音する時間の長さ（秒）
     WAVE_OUTPUT_FILENAME = "sample.wav" #音声を保存するファイル名
@@ -37,9 +42,9 @@ def pyaud():
     #基本情報の設定
     FORMAT = pyaudio.paInt16 #音声のフォーマット
     CHANNELS = 1             #モノラル
-    RATE = 32000             #サンプルレート
+    RATE = 44100             #サンプルレート
     # RATE = 44100             #サンプルレート
-    CHUNK = 1024           #データ点数
+    CHUNK = int(RATE/5)         #データ点数
     audio = pyaudio.PyAudio() #pyaudio.PyAudio()
     
     stream = audio.open(format=FORMAT, channels=CHANNELS,
@@ -54,20 +59,45 @@ def pyaud():
     #--------------録音開始---------------
     
     print ("recording...")
-    numOfFrames = RATE*10
-    frames = [0]*numOfFrames
-    i=0
+    numOfFrames = RATE*2
+    global x 
+    x = [0]*numOfFrames
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_ylim(-33000, 33000)
+    line, = ax.plot(range(numOfFrames), [0]*numOfFrames)
     # for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
-    while(True):
-        data = stream.read(2)
-        # frames.append(data)
-        print(data)
-        print(type(data))
-        frames[i]=struct.unpack("<h", data)
-        plt.plot(range(numOfFrames), frames)
-        plt.pause(0.01)
-        i+=1    
+
+    # mk.1
+    # while(True):
+    #     data = stream.read(CHUNK)
+    #     # frames.append(data)
+    #     # print(data)
+    #     # print(type(data))
+    #     x = x[CHUNK:] + np.fromstring(data, dtype=np.int16).tolist()
+    #     line, = ax.plot(range(numOfFrames), x, color="b", marker='.', linestyle='None')
+    #     plt.pause(1e-10)
+    #     line.remove()
+
+    # mk.2
+    def init():
+        line.set_ydata(np.ma.array(range(numOfFrames), mask=True))
+        return line
+
+    def update(i):
+        global x
+        start = time.time()
+        data = stream.read(CHUNK)
+        end = time.time()
+        # print(end-start)
+        x = x[CHUNK:] + np.fromstring(data, dtype=np.int16).tolist()
+        line.set_ydata(x)
+        return line
     
+    anim = animation.FuncAnimation(fig, update, init_func=init)
+
+    plt.show()
+    print("hoge")
     exit(1)
     print ("finished recording")
     
