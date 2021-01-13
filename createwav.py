@@ -21,7 +21,7 @@ def create_wave(A,f0,fs,t, fname):#A:振幅,f0:基本周波数,fs:サンプリ�
 
     #サイン波をwavファイルとして書き出し
     w = wave.Wave_write(fname)
-    p = (1, 2, fs, len(binwave), 'NONE', 'not compressed')#(チャンネル数(1:モノラル,2:ステレオ)、サンプルサイズ(バイト)、サンプリング周波数、フレーム数、圧縮形式(今のところNONEのみ)、圧縮形式を人に判読可能な形にしたもの？通常、 'NONE' に対して 'not compressed' が返されます。)
+    p = (2, 2, fs, len(binwave), 'NONE', 'not compressed')#(チャンネル数(1:モノラル,2:ステレオ)、サンプルサイズ(バイト)、サンプリング周波数、フレーム数、圧縮形式(今のところNONEのみ)、圧縮形式を人に判読可能な形にしたもの？通常、 'NONE' に対して 'not compressed' が返されます。)
     w.setparams(p)
     w.writeframes(binwave)
     w.close()
