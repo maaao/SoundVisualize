@@ -45,10 +45,10 @@ plot_sxx = None
 plot_wave = None
 
 def main():
-    RATE = 48000
+    RATE = 16000
     CHANNELS = 1
     FORMAT = pyaudio.paInt16
-    CHUNK = 4096
+    CHUNK = 8192
 
     USE_MIC = True
 
@@ -62,7 +62,7 @@ def main():
             frames_per_buffer=CHUNK
         )
     else:
-        filename = "wav/createwave.wav"
+        filename = "wav/asano.wav"
         stream = WavLoader()
         stream.open(filename)
         RATE = stream.getframerate()
@@ -74,24 +74,21 @@ def main():
     plot_wave = np.zeros(numOfPlots)
 
     # スペクトログラム解析用の変数
-    nperseg = 512
-    noverlap = 256
-    nfft = 512
+    nperseg = 512           # 時間軸の分解能
+    noverlap = nperseg//64  # 取得データ毎の重複量
+    nfft = nperseg*16        # 周波数の分解能
+    vmin = -200
+    vmax = 175
     size_f = int(nfft/2)+1
     size_t = int((numOfPlots-noverlap)/(nperseg-noverlap))
     size_step_t = int((CHUNK-noverlap)/(nperseg-noverlap))
     # size_t = size_step_t # デバッグ用
     f = np.linspace(0, int(RATE/2), size_f)
     t = np.linspace(0, numOfPlots/RATE, size_t)
-    vmin = -300
-    vmax = 0
     
-    # print("shape : {0}, data : {1}".format(f.shape, f))
-    # print("shape : {0}, data : {1}".format(t.shape, t))
-
     # スペクトログラム解析結果描画用
     global plot_sxx
-    plot_sxx = np.zeros((size_f, size_t))
+    plot_sxx = np.full((size_f, size_t), 1e-10)
 
     # 描画の準備
     fig = plt.figure()
@@ -103,8 +100,8 @@ def main():
     line,  = ax1.plot(range(numOfPlots), [0]*numOfPlots)
     
     quad = ax2.pcolormesh(t, f, plot_sxx, shading='auto', cmap="jet", vmin=vmin, vmax=vmax)
-    cb = fig.colorbar(quad, ax=ax2)
-    cb.mappable.set_clim([vmin, vmax])
+    # cb = fig.colorbar(quad, ax=ax2)
+    # cb.mappable.set_clim([vmin, vmax])
 
     def init():
         print("init\n-----")
@@ -126,28 +123,14 @@ def main():
 
         # スペクトログラム解析
         f, t, Sxx = signal.spectrogram(x=data, fs=RATE, nperseg=nperseg, noverlap=noverlap, nfft=nfft)
-        # print("shape : {0}, data : {1}".format(f.shape, f))
-        # print("shape : {0}, data : {1}".format(t.shape, t))
-        # exit(0)
 
-        # plot_sxxとSxxを水平に結合し余分な箇所を削除
+        # plot_sxxとSxxを水平に結合し余分な箇所を削除し結果を描画
         plot_sxx = np.delete(np.hstack((plot_sxx, np.array(Sxx))), np.arange(0, size_step_t), axis=1)
-
-        # with open("wave.log", mode="wb") as f:
-        #     f.write(Sxx.tostring())
-        #     f.write(plot_sxx.tobytes())
-        # exit(0)
-
-        # スペクトログラム解析結果を描画
+        quad.set_array(10*np.log(plot_sxx))
         # quad.set_array(10*np.log(Sxx/Sxx.max()))
-        quad.set_array(10*np.log(plot_sxx/plot_sxx.max()))
-        print("max : {0}, min : {1}".format(plot_sxx.max(), plot_sxx.min()))
-
-
-        print("-------")
         return quad
     
-    ani = animation.FuncAnimation(fig, update, init_func=init)
+    ani = animation.FuncAnimation(fig, update, init_func=init, interval=0.001)
     plt.show()
         
 if __name__ == "__main__":
