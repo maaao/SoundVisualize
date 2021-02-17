@@ -45,12 +45,12 @@ plot_sxx = None
 plot_wave = None
 
 def main():
-    RATE = 16000
+    RATE = 32000
     CHANNELS = 1
     FORMAT = pyaudio.paInt16
     CHUNK = 8192
 
-    USE_MIC = True
+    USE_MIC = False
 
     if(USE_MIC):
         stream = pyaudio.PyAudio().open(
@@ -62,7 +62,7 @@ def main():
             frames_per_buffer=CHUNK
         )
     else:
-        filename = "wav/asano.wav"
+        filename = "data/wav/train/denki/0.wav"
         stream = WavLoader()
         stream.open(filename)
         RATE = stream.getframerate()
@@ -75,8 +75,8 @@ def main():
 
     # スペクトログラム解析用の変数
     nperseg = 512           # 時間軸の分解能
-    noverlap = nperseg//64  # 取得データ毎の重複量
-    nfft = nperseg*16        # 周波数の分解能
+    noverlap = nperseg//8    # 取得データ毎の重複量
+    nfft = nperseg*64        # 周波数の分解能
     vmin = -200
     vmax = 175
     size_f = int(nfft/2)+1
@@ -104,7 +104,6 @@ def main():
     # cb.mappable.set_clim([vmin, vmax])
 
     def init():
-        print("init\n-----")
         quad.set_array([])
         return quad
         
